@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.7.0_01"/>
+	<classpathentry kind="lib" path="src/beautyeye_lnf.jar"/>
+	<classpathentry kind="lib" path="src/jakarta-oro-2.0.8.jar"/>
+	<classpathentry kind="lib" path="src/mysql-connector-java-5.1.10-bin.jar"/>
+	<classpathentry kind="lib" path="src/commons-logging-1.1.3.jar"/>
+	<classpathentry kind="lib" path="src/commons-dbcp2-2.0.jar"/>
+	<classpathentry kind="lib" path="src/commons-pool2-2.2.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
