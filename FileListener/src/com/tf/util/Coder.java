@@ -14,6 +14,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 
+import com.tf.view.Listener;
+
 public class Coder {
 	public boolean execute(CodeUtil util) {
 		try {
@@ -25,6 +27,10 @@ public class Coder {
 			Logs.WriteLogs(e);
 			e.printStackTrace();
 			return false;
+		}catch(Throwable e){
+			Listener.area.append("error");
+			Listener.area.append(e.getMessage());
+			return false;
 		}
 	}
 
@@ -34,7 +40,7 @@ public class Coder {
 			public boolean doTransfer(Key key) throws Exception {
 				File sourceFile = new File(path + ".codr");
 				File tempFile = new File(path);
-				if (!tempFile.renameTo(sourceFile)) {
+				if (!ElementUtil.renameTO(tempFile, sourceFile)) {
 					return false;
 				}
 				;
@@ -66,14 +72,47 @@ public class Coder {
 		});
 	}
 
+	public boolean encode(final String Sourcepath,final String destPath) {
+		return execute(new CodeUtil() {
+			@Override
+			public boolean doTransfer(Key key) throws Exception {
+				File sourceFile=new File(Sourcepath);
+				File destFile = new File(destPath);
+				if (sourceFile.exists() && sourceFile.isFile()) {
+					if (!destFile.getParentFile().exists()) {
+						destFile.getParentFile().mkdirs();
+					}
+					InputStream in = new FileInputStream(sourceFile);
+					OutputStream out = new FileOutputStream(destFile);
+					Cipher cipher = Cipher.getInstance("DES");
+					cipher.init(Cipher.ENCRYPT_MODE, key);
+					CipherInputStream cin = new CipherInputStream(in, cipher);
+					byte[] cache = new byte[1024];
+					int nRead = 0;
+					while ((nRead = cin.read(cache)) != -1) {
+						out.write(cache, 0, nRead);
+						out.flush();
+					}
+					out.close();
+					cin.close();
+					in.close();
+					return (sourceFile.delete());
+				} else {
+					return false;
+				}
+			}
+		});
+	}
+
 	public boolean decode(final String path) {
 		return execute(new CodeUtil() {
 			@Override
 			public boolean doTransfer(Key key) throws Exception {
 				File sourceFile = new File(path + ".codr");
 				File tempFile = new File(path);
-				if (!tempFile.renameTo(sourceFile)) {
-					return false;
+				if (!ElementUtil.renameTO(tempFile, sourceFile)) {
+					Thread.sleep(5000);
+					return doTransfer(key);
 				};
 				File destFile = new File(path);
 				if (sourceFile.exists() && sourceFile.isFile()) {
@@ -102,6 +141,10 @@ public class Coder {
 			}
 		});
 
+	}
+	public static void main(String[] args) {
+//		new Coder().encode("F:\\pdfImg\\bbb.doc");
+		new Coder().decode("F:\\pdfImg\\bbb.doc");
 	}
 
 }

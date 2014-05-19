@@ -33,4 +33,28 @@ public class Logs {
 		}
 
 	}
+	public static void WriteLogs(String message) {
+		File file = new File(System.getProperty("user.dir")
+				+ "\\logs\\"
+				+ new SimpleDateFormat("yyyy-MM-dd").format(System
+						.currentTimeMillis()) + ".txt");
+		if (!file.getParentFile().exists()) {
+			file.getParentFile().mkdirs();
+		}
+		FileWriter fw;
+		try {
+			fw = new FileWriter(file, true);
+			fw.write("--------------------"
+					+ (new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
+					.format(System.currentTimeMillis()))
+			+ "--------------------\r\n");
+			fw.write(message+"\r\n");
+			fw.close();
+		} catch (IOException e) {
+			Logs.WriteLogs(e);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
 }

@@ -53,12 +53,15 @@ public class MD5Util {
 	*/
 	public static String getFileMD5String_deprecated(File file)
 	    throws IOException {
+		
 	   FileInputStream in = new FileInputStream(file);
 	   FileChannel ch = in.getChannel();
 	   MappedByteBuffer byteBuffer = ch.map(FileChannel.MapMode.READ_ONLY, 0,
 	     file.length());
 	   messagedigest.update(byteBuffer);
-	   return bufferToHex(messagedigest.digest());
+	   String res = bufferToHex(messagedigest.digest());
+	   in.close();
+	   return res ;
 	}
 
 	public static String getMD5String(String s) {

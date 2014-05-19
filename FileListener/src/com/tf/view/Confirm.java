@@ -4,6 +4,7 @@ import java.awt.Frame;
 
 import javax.swing.JOptionPane;
 
+@SuppressWarnings("serial")
 public class Confirm extends Frame {
 	public boolean showOptionDialog() {
 		String[] options = { "是", "否" };

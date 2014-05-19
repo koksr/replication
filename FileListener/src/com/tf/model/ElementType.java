@@ -2,6 +2,10 @@ package com.tf.model;
 
 public enum ElementType {
 	/**
+	 * 素材类型枚举类:文本
+	 */
+	text(1),
+	/**
 	 * 素材类型枚举类 ：音频
 	 */
 

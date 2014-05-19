@@ -1,7 +1,6 @@
 package com.tf.view;
 
 import java.awt.FlowLayout;
-import java.awt.TextField;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -15,17 +14,19 @@ import javax.swing.UIManager;
 import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
 
 import com.sun.awt.AWTUtilities;
+import com.tf.init.InitConifg;
 import com.tf.util.ElementUtil;
 import com.tf.util.Logs;
 import com.tf.util.ThreadPool;
 
+@SuppressWarnings("serial")
 public class Listener extends JFrame {
 	public static final JTextArea area = new JTextArea(20, 30);
 	public static final JLabel lab = new JLabel();
 	static String status = "start";
 
 	public static void main(String[] args) {
-		ElementUtil.createDirs();
+		InitConifg.init();
 		try {
 			BeautyEyeLNFHelper.launchBeautyEyeLNF();
 		} catch (Exception e) {
@@ -47,6 +48,8 @@ public class Listener extends JFrame {
 		// sp.setSize(300, 1300);
 		win.add(sp);
 		// win.add(area,BorderLayout.CENTER);
+		
+	
 		start.setText("停止");
 		status = "stop";
 		area.append(ElementUtil.dateFormat.format(System

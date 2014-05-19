@@ -1,42 +1,26 @@
 package com.tf.util;
 
-import java.awt.Desktop;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.MatchResult;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.PatternCompiler;
-import org.apache.oro.text.regex.PatternMatcher;
-import org.apache.oro.text.regex.Perl5Compiler;
-import org.apache.oro.text.regex.Perl5Matcher;
+import org.apache.commons.io.FileUtils;
 
+import com.sun.image.codec.jpeg.ImageFormatException;
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGEncodeParam;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
-import com.tf.model.Element;
 import com.tf.model.ElementType;
-import com.tf.view.Listener;
 
 public class ElementUtil {
 	public static SimpleDateFormat dateFormat = new SimpleDateFormat(
@@ -74,179 +58,24 @@ public class ElementUtil {
 		return fileName.substring(0, splitIndex);
 	}
 
-	/**
-	 * 
-	 * @param element
-	 * @param file
-	 * @return 生成缩略图并返回缩略图相对路径
-	 */
-	public static String getThumbnail(Element element, File file) {
-		String thumName = null;
-		if (element.getType() == ElementType.video.getValue()
-				|| element.getType() == ElementType.flash.getValue()) {
-			File temp = new File(file.getParentFile().getAbsolutePath() + "\\"
-					+ new Date().getTime() + ".bat");
-			FileWriter fw = null;
-			thumName = file.getParentFile().getAbsolutePath() + "\\img"
-					+ getFilePrefix(file.getName()) + ".jpg";
-			try {
-				fw = new FileWriter(temp);
-				String command = "D:\r\n cd D:\\ffmpeg\\bin\\\r\nffmpeg.exe -i \""
-						+ file.getAbsolutePath()
-						+ "\" -ss 5 -vframes 1 -r 1 -ac 1 -ab 2 -s "
-						+ element.getResolution()
-						+ " -f  image2 \""
-						+ thumName
-						+ "\"\r\n del \"" + temp.getAbsolutePath() + "\"";
-				fw.write(command);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				Logs.WriteLogs(e);
-				Listener.area.append("异常警告\r\n" + e.getMessage() + "\r\n");
-				System.exit(0);
-			} finally {
-				if (fw != null) {
-					try {
-						fw.close();
-					} catch (IOException e) {
-						Logs.WriteLogs(e);
-						Listener.area.append("异常警告\r\n" + e.getMessage()
-								+ "\r\n");
-						System.exit(0);
-					}
-				}
-			}
-			try {
-				Desktop.getDesktop().open(temp);
-			} catch (IOException e) {
-				Logs.WriteLogs(e);
-				Listener.area.append("异常警告\r\n" + e.getMessage() + "\r\n");
-			}
-
+	public static String getRealName(String filePath) {
+		File file = new File(filePath);
+		if (!file.exists()) {
+			return null;
+		} else {
+			return getFilePrefix(file.getName());
 		}
-
-		if (!new File(thumName).exists()) {
-
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e) {
-				Logs.WriteLogs(e);
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-		}
-		Listener.area.append(dateFormat.format(System.currentTimeMillis())
-				+ "	" + element.getFileName() + "缩略图生成成功\r\n");
-		return "ftpFile\\processed\\img" + getFilePrefix(file.getName())
-				+ ".jpg";
-	}
-
-	/**
-	 * 
-	 * @param file
-	 * @param element
-	 * @return element
-	 */
-	public static Element getInfo(File file, Element element) {
-		String result = null;
-		List<String> commend = new java.util.ArrayList<String>();
-
-		commend.add("D:\\ffmpeg\\bin\\ffmpeg");// 鍙互璁剧疆鐜鍙橀噺浠庤�鐪佸幓杩欒
-		commend.add("ffmpeg");
-		commend.add("-i");
-		commend.add(file.getAbsolutePath());
-		try {
-			ProcessBuilder builder = new ProcessBuilder();
-			builder.command(commend);
-			builder.redirectErrorStream(true);
-			Process p = builder.start();
-
-			// 1. start
-			BufferedReader buf = null; // 淇濆瓨ffmpeg鐨勮緭鍑虹粨鏋滄祦
-			String line = null;
-			// read the standard output
-
-			buf = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-			StringBuffer sb = new StringBuffer();
-			while ((line = buf.readLine()) != null) {
-				sb.append(line);
-				continue;
-			}
-			int ret = p.waitFor();// 杩欓噷绾跨▼闃诲锛屽皢绛夊緟澶栭儴杞崲杩涚▼杩愯鎴愬姛杩愯缁撴潫鍚庯紝鎵嶅線涓嬫墽琛�
-			// 1. end
-			result = sb.toString();
-		} catch (Exception e) {
-			Logs.WriteLogs(e);
-			Listener.area.append("异常警告\r\n" + e.getMessage() + "\r\n");
-
-		}
-		PatternCompiler compiler = new Perl5Compiler();
-		try {
-			String regexDuration = "Duration: (.*?), start: (.*?), bitrate: (\\d*) kb\\/s";
-			String regexVideo = "Video: (.*?), (.*?), (.*?)[,\\s]";
-			String regexAudio = "Audio: (\\w*), (\\d*) Hz";
-
-			Pattern patternDuration = compiler.compile(regexDuration,
-					Perl5Compiler.CASE_INSENSITIVE_MASK);
-			PatternMatcher matcherDuration = new Perl5Matcher();
-			if (matcherDuration.contains(result, patternDuration)) {
-				MatchResult re = matcherDuration.getMatch();
-				// 1鎾斁鏃堕棿2寮�鏃堕 棿3鐮佺巼
-				element.setTimeLength(re.group(1));
-			}
-
-			Pattern patternVideo = compiler.compile(regexVideo,
-					Perl5Compiler.CASE_INSENSITIVE_MASK);
-			PatternMatcher matcherVideo = new Perl5Matcher();
-
-			if (matcherVideo.contains(result, patternVideo)) {
-				MatchResult re = matcherVideo.getMatch();
-				// 1缂栫爜鏍煎紡2瑙嗛鏍煎紡3鍒嗚鲸鐜�
-				element.setResolution(re.group(3));
-			}
-
-			Pattern patternAudio = compiler.compile(regexAudio,
-					Perl5Compiler.CASE_INSENSITIVE_MASK);
-			PatternMatcher matcherAudio = new Perl5Matcher();
-
-			if (matcherAudio.contains(result, patternAudio)) {
-				MatchResult re = matcherAudio.getMatch();
-				// TODO element.setType()
-			}
-
-		} catch (MalformedPatternException e) {
-			Logs.WriteLogs(e);
-			Listener.area.append("异常警告\r\n" + e.getMessage() + "\r\n");
-		}
-		int type = element.getType();
-		if (type == ElementType.video.getValue()
-				|| type == ElementType.image.getValue()
-				|| type == ElementType.html.getValue()) {
-			if (element.getResolution() == null) {
-				getInfo(file, element);
-			} else {
-				Listener.area.append(dateFormat.format(System
-						.currentTimeMillis())
-						+ "	"
-						+ element.getFileName()
-						+ "信息读取成功\r\n");
-			}
-		}
-		return element;
 	}
 
 	public static int getType(String name) {
 		String[] videoType = { "mkv", "ts", "m2ts", "mts", "tp", "trp", "wmv",
 				"Ifo", "iso", "dat", "avi", "asf", "mp4", "mov", "rm", "rmvb",
-				"divx", "xvid","flv","f4v" };
+				"divx", "xvid", "flv", "f4v", "mpg", "vob" };
 		String[] audioType = { "mp3", "wma", "wav", "ogg", "aac", "lpcm",
 				"flac", "ac3" };
 		String[] flashType = { "swf" };
 		String[] imageType = { "jpg", "bmp", "png", "jpeg", "gif" };
-		String[] docType = { "xlsx", "docx", "pptx", "doc", "ppt", "xls",
-				"txt", "pdf" };
+		String[] docType = { "xlsx", "docx", "pptx", "doc", "ppt", "xls", "pdf" };
 		if (in(getFileSuffix(name), videoType)) {
 			return ElementType.video.getValue();
 		} else if (in(getFileSuffix(name), audioType)) {
@@ -308,25 +137,109 @@ public class ElementUtil {
 		}
 	}
 
+	public static void CopyImg(String sourcePath, String destPath) {
+		File source = new File(sourcePath);
+		FileInputStream in = null;
+		FileOutputStream out = null;
+		try {
+			in = new FileInputStream(source);
+			out = new FileOutputStream(destPath);
+			byte[] buffer = new byte[1024];
+			while (true) {
+				int size = in.read(buffer);
+				out.write(buffer);
+				if (size == -1) {
+					out.flush();
+					out.close();
+					in.close();
+					return;
+				}
+			}
+		} catch (Exception e) {
+			Logs.WriteLogs(e);
+			// TODO: handle exception
+			e.printStackTrace();
+		} finally {
+			try {
+				out.flush();
+				out.close();
+				in.close();
+			} catch (IOException e) {
+				Logs.WriteLogs(e);
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static void thumImg(String imgPath) {
+		File source = new File(imgPath);
+		Image srcFile = null;
+		try {
+			srcFile = ImageIO.read(source);
+		} catch (IOException e) {
+			e.printStackTrace();
+			Logs.WriteLogs(e);
+		}
+		int width = srcFile.getWidth(null);
+		int height = srcFile.getHeight(null);
+		float arg = 0;
+		if (height >= width) {
+			arg = (float) (300.00000000 / height);
+			height = 300;
+			width = new Float(width * arg).intValue();
+		} else {
+
+			arg = (float) (300.00000000 / width);
+			width = 300;
+			height = new Float(arg * height).intValue();
+		}
+		BufferedImage tag = new BufferedImage(width, height,
+				BufferedImage.TYPE_INT_RGB);
+		tag.getGraphics().drawImage(srcFile, 0, 0, width, height, null);
+		// String filePrex = oldFile.getName().substring(0,
+		// oldFile.getName().indexOf('.'));
+		// newImage = filePrex + smallIcon
+		// + oldFile.getName().substring(filePrex.length());
+		FileOutputStream out = null;
+		try {
+			out = new FileOutputStream(source.getParentFile().getAbsolutePath()
+					+ "\\img" + source.getName());
+		} catch (FileNotFoundException e) {
+			Logs.WriteLogs(e);
+			e.printStackTrace();
+		}
+		JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
+		JPEGEncodeParam jep = JPEGCodec.getDefaultJPEGEncodeParam(tag);
+		jep.setQuality(1, true);
+		try {
+			encoder.encode(tag, jep);
+		} catch (ImageFormatException e) {
+			Logs.WriteLogs(e);
+			e.printStackTrace();
+		} catch (IOException e) {
+			Logs.WriteLogs(e);
+			e.printStackTrace();
+		} finally {
+			try {
+				out.close();
+			} catch (IOException e) {
+				Logs.WriteLogs(e);
+				e.printStackTrace();
+			}
+		}
+	}
+
 	public static File zipImageFile(String path, long maxSize) {
 		return zipImageFile(path, maxSize, 1.5);
 	}
 
 	/**
-	 * 等比例压缩图片文件<br>
-	 * 先保存原文件，再压缩、上传
 	 * 
-	 * @param oldFile
-	 *            要进行压缩的文件
-	 * @param newFile
-	 *            新文件
-	 * @param width
-	 *            宽度 //设置宽度时（高度传入0，等比例缩放）
-	 * @param height
-	 *            高度 //设置高度时（宽度传入0，等比例缩放）
-	 * @param quality
-	 *            质量
-	 * @return 返回压缩后的文件的全路径
+	 * @param path
+	 * @param maxSize
+	 * @param scale
+	 *            压缩比
+	 * @return 压缩后的文件
 	 */
 	public static File zipImageFile(String path, long maxSize, double scale) {
 		File newFile = new File(path);
@@ -382,5 +295,26 @@ public class ElementUtil {
 				file.mkdir();
 			}
 		}
+	}
+
+	public static boolean renameTO(File srcFile, File destFile)
+			throws IOException {
+		if (!destFile.getParentFile().exists())
+			destFile.getParentFile().mkdirs();
+
+		FileUtils.copyFile(srcFile, destFile);
+
+		if (destFile.exists()) {
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
+	public static void main(String[] args) {
+		float a = (float) (300.0000000000 / 2984);
+		System.out.println(a);
+		thumImg("F:\\baidu.jpeg");
 	}
 }

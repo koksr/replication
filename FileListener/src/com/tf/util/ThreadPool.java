@@ -1,7 +1,6 @@
 package com.tf.util;
 
 import java.io.File;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -11,8 +10,9 @@ import java.util.concurrent.TimeUnit;
 
 import com.tf.ctrl.Execute;
 import com.tf.ctrl.ExecuteFail;
+import com.tf.ctrl.OfficeExecute;
 import com.tf.ctrl.WebExecute;
-import com.tf.model.Element;
+import com.tf.model.ElementType;
 import com.tf.view.Listener;
 
 public class ThreadPool extends Thread {
@@ -52,6 +52,9 @@ public class ThreadPool extends Thread {
 							this.put(new WebExecute(name,creater,f));
 						}else{
 							if(ElementUtil.checkMd5(f, md5)){
+								if(ElementUtil.getType(name)==ElementType.document.getValue())
+									this.put(new OfficeExecute(f, name, creater, md5));
+								else
 								this.put(new Execute(f, md5, name, creater));
 							}else{
 								this.put(new ExecuteFail(name, creater, f));
@@ -66,7 +69,6 @@ public class ThreadPool extends Thread {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				Logs.WriteLogs(e);
-				// TODO Auto-generated catch block
 				Listener.area.append("异常警告\r\n" + e.getMessage() + "\r\n");
 			}
 			
