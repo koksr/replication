@@ -36,8 +36,8 @@ public class OfficeExecute extends Thread {
 	}
 
 	public void run() {
-		Listener.area.append(ElementUtil.dateFormat.format(System
-				.currentTimeMillis()) + "	开始处理"+name+"\r\n");
+		/*Listener.area.append(ElementUtil.dateFormat.format(System
+				.currentTimeMillis()) + "	开始处理"+name+"\r\n");*/
 		File file = new File(System.getProperty("user.dir") + "\\processed\\"
 				+ md5 + "." + ElementUtil.getFileSuffix(name));
 		if (!file.exists()) {

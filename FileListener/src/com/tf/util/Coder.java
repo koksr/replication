@@ -142,9 +142,5 @@ public class Coder {
 		});
 
 	}
-	public static void main(String[] args) {
-//		new Coder().encode("F:\\pdfImg\\bbb.doc");
-		new Coder().decode("F:\\pdfImg\\bbb.doc");
-	}
 
 }

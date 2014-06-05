@@ -20,6 +20,8 @@ public class SourceUtil {
 	private static final String failImg = "fail.png";
 	private static final String plugins = "plugins.zip";
 	private static final String pauseImg = "pause.png";
+	private static final String streamImg = "stream.png";
+	private static final String textImg = "text.jpg";
 	private void SourceFile(String fileName) {
 		File f  = new File(System.getProperty("user.dir") + "\\" + fileName);
 		if(f.exists()){
@@ -102,6 +104,8 @@ public class SourceUtil {
 	}
 	public static void getSource() {
 		new SourceUtil().SourceImg(SourceUtil.pauseImg);
+		new SourceUtil().SourceImg(SourceUtil.streamImg);
+		new SourceUtil().SourceImg(SourceUtil.textImg);
 		new SourceUtil().SourceFile(SourceUtil.config);
 		new SourceUtil().SourceImg(SourceUtil.audioImg);
 		new SourceUtil().SourceImg(SourceUtil.failImg);
