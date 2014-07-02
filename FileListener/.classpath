@@ -2,11 +2,25 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.7.0_01"/>
-	<classpathentry kind="lib" path="src/beautyeye_lnf.jar"/>
-	<classpathentry kind="lib" path="src/jakarta-oro-2.0.8.jar"/>
-	<classpathentry kind="lib" path="src/mysql-connector-java-5.1.10-bin.jar"/>
-	<classpathentry kind="lib" path="src/commons-logging-1.1.3.jar"/>
-	<classpathentry kind="lib" path="src/commons-dbcp2-2.0.jar"/>
-	<classpathentry kind="lib" path="src/commons-pool2-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/beautyeye_lnf.jar"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-dbcp2-2.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/commons-pool2-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/fontbox-1.8.4.jar"/>
+	<classpathentry kind="lib" path="lib/icepdf-core.jar"/>
+	<classpathentry kind="lib" path="lib/jakarta-oro-2.0.8.jar"/>
+	<classpathentry kind="lib" path="lib/jodconverter-2.2.2.jar"/>
+	<classpathentry kind="lib" path="lib/juh-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jurt-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.10-bin.jar"/>
+	<classpathentry kind="lib" path="lib/pdfbox-1.8.4.jar"/>
+	<classpathentry kind="lib" path="lib/ridl-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.5.6.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-jdk14-1.5.6.jar"/>
+	<classpathentry kind="lib" path="lib/unoil-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/xstream-1.3.1.jar"/>
+	<classpathentry kind="src" path="resouce"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.4.jar" sourcepath="C:/Users/zhangtianyu/Downloads/commons-io-2.4-src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

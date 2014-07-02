@@ -70,7 +70,7 @@ public class ElementUtil {
 	public static int getType(String name) {
 		String[] videoType = { "mkv", "ts", "m2ts", "mts", "tp", "trp", "wmv",
 				"Ifo", "iso", "dat", "avi", "asf", "mp4", "mov", "rm", "rmvb",
-				"divx", "xvid", "flv", "f4v", "mpg", "vob" };
+				"divx", "xvid", "flv", "f4v", "mpg", "vob" ,"mpeg"};
 		String[] audioType = { "mp3", "wma", "wav", "ogg", "aac", "lpcm",
 				"flac", "ac3" };
 		String[] flashType = { "swf" };
@@ -288,7 +288,7 @@ public class ElementUtil {
 		List<String> list = new ArrayList<String>(Arrays.asList(
 				"playlistXmlFile", "processed", "programXmlFile", "screen",
 				"scrollingnewsXmlFile", "templateXmlFile", "weatherXmlFile",
-				"logs"));
+				"logs","statistics_old","statistics"));
 		for (String str : list) {
 			File file = new File(System.getProperty("user.dir") + "\\" + str);
 			if (!file.exists()) {
@@ -311,10 +311,7 @@ public class ElementUtil {
 		}
 
 	}
+	
 
-	public static void main(String[] args) {
-		float a = (float) (300.0000000000 / 2984);
-		System.out.println(a);
-		thumImg("F:\\baidu.jpeg");
-	}
+
 }

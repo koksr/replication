@@ -23,15 +23,16 @@ public class FtpCtrl {
 	private static String DEFAULT_REMOTE_CHARSET = "UTF-8";
 	private static String DEFAULT_LOCAL_CHARSET = "iso-8859-1";
 	private FTPClient ftpClient;
-	public static Map<Integer, Long> pro = new HashMap<Integer,Long>();
+	public static Map<Integer, Long> pro = new HashMap<Integer, Long>();
 
 	@SuppressWarnings("static-access")
-	public <T> T connect(FtpClientCallback<T> callback)throws IOException {
+	public <T> T connect(FtpClientCallback<T> callback) throws IOException {
 		ftpClient = new FTPClient();
-		FtpServer config =WebRequest.ServerConfig();
+		FtpServer config = WebRequest.ServerConfig();
 		ftpClient.setDataTimeout(7200);
 		try {
-			ftpClient.connect(config.getIP(), Integer.parseInt(config.getPort()));
+			ftpClient.connect(config.getIP(),
+					Integer.parseInt(config.getPort()));
 			ftpClient.setControlEncoding(DEFAULT_REMOTE_CHARSET);
 			if (FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
 				if (ftpClient.login(config.getUser(), config.getPwd())) {
@@ -42,10 +43,11 @@ public class FtpCtrl {
 
 		} catch (SocketException e) {
 			System.out.println("initException");
-			UploadApp.destory=true;
-			UploadApp.confirm.showMessageDialog(null, "网络连接异常,请稍候再试", "错误信息", JOptionPane.ERROR_MESSAGE);
+			UploadApp.destory = true;
+			UploadApp.confirm.showMessageDialog(null, "网络连接异常,请稍候再试", "错误信息",
+					JOptionPane.ERROR_MESSAGE);
 			WebRequest.writeLog(e);
-		}  finally {
+		} finally {
 			try {
 				ftpClient.logout();
 				disconnect(ftpClient);
@@ -135,20 +137,24 @@ public class FtpCtrl {
 			while ((c = raf.read(bytes)) != -1) {
 				os.write(bytes, 0, c);
 				localReadBytes += c;
-				if (localReadBytes / step != process) {
+				if (step == 0L) {
+					pro.put(row, 100L);
+				} else if (localReadBytes / step != process) {
 					process = localReadBytes / step;
-				//	remoteFile.renameTo(new File(remoteFile.getAbsolutePath().split(".temp~")[0]));
+					// remoteFile.renameTo(new
+					// File(remoteFile.getAbsolutePath().split(".temp~")[0]));
 					// TODO 进度条callback
 					pro.put(row, process);
-					//System.out.println("sys               " + pro);
+					// System.out.println("sys               " + pro);
 				}
 			}
 		} catch (java.net.SocketException e) {
 			System.out.println("socketException");
 			ftpClient.disconnect();
-			if(UploadApp.destory==false){
-				UploadApp.destory=true;
-				UploadApp.confirm.showMessageDialog(null, "网络连接异常,请稍候再试", "错误信息", JOptionPane.ERROR_MESSAGE);
+			if (UploadApp.destory == false) {
+				UploadApp.destory = true;
+				UploadApp.confirm.showMessageDialog(null, "网络连接异常,请稍候再试",
+						"错误信息", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		os.flush();
@@ -156,19 +162,19 @@ public class FtpCtrl {
 		os.close();
 		boolean result = ftpClient.completePendingCommand();
 		if (remoteSize > 0) {
-			if(result){
-				ftpClient.rename(remote,remote.split(".temp~")[0]);
-				status=FtpStatus.Upload_From_Break_Success;
-			}else{
-				status=FtpStatus.Upload_From_Break_Failed;
-			}
-			
-		} else {
-			if(result){
+			if (result) {
 				ftpClient.rename(remote, remote.split(".temp~")[0]);
-				status=FtpStatus.Upload_New_File_Success;
-			}else{
-				status=FtpStatus.Upload_New_File_Failed;
+				status = FtpStatus.Upload_From_Break_Success;
+			} else {
+				status = FtpStatus.Upload_From_Break_Failed;
+			}
+
+		} else {
+			if (result) {
+				ftpClient.rename(remote, remote.split(".temp~")[0]);
+				status = FtpStatus.Upload_New_File_Success;
+			} else {
+				status = FtpStatus.Upload_New_File_Failed;
 			}
 		}
 

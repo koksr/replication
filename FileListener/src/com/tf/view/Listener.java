@@ -16,6 +16,7 @@ import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
 import com.sun.awt.AWTUtilities;
 import com.tf.init.InitConifg;
 import com.tf.util.ElementUtil;
+import com.tf.util.LogThreadPool;
 import com.tf.util.Logs;
 import com.tf.util.ThreadPool;
 
@@ -56,6 +57,7 @@ public class Listener extends JFrame {
 				.currentTimeMillis()) + "	开始运行\r\n");
 		ThreadPool.runStatus = true;
 		ThreadPool.getInstance().start();
+		LogThreadPool.getInstance().start();
 		start.addMouseListener(new java.awt.event.MouseAdapter() {
 			public void mouseClicked(java.awt.event.MouseEvent e) {
 

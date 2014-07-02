@@ -22,7 +22,7 @@ public class XmlUtil {
 
 	private synchronized static Document getConfig()
 			throws ParserConfigurationException, SAXException, IOException {
-		File f = new File(System.getProperty("user.dir") + "\\DBConf.xml");
+		File f = new File(System.getProperty("user.dir") + "\\DBConf.xml");//XML配置文件路径
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		Document doc = builder.parse(f);

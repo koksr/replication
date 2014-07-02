@@ -13,7 +13,7 @@ import com.tf.util.ThreadPool;
 import com.tf.view.Listener;
 
 public class Execute extends Thread {
-	private Long maxSize = 1024 * 1024 * 10L;
+	private Long maxSize = 1024 * 1024 * 1000L; 
 	private File tempFile;
 	private String md5;
 	private String name;

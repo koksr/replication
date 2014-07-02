@@ -12,6 +12,7 @@ public class InitConifg {
 		ElementUtil.createDirs();
 		SourceUtil.getSource();
 		new DBhandle().getAuditStatus();
+		new DBhandle().setCryptographic();
 		if(IECaptInit.getPath()==null||DBInit.getData()==null||FfmpegInit.getPath()==null){
 			JOptionPane.showMessageDialog(null, "程序初始化失败", "错误信息",
 					JOptionPane.OK_OPTION);

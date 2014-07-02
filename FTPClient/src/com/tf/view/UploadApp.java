@@ -47,24 +47,21 @@ public class UploadApp extends JApplet {
 	public static String url;
 	static int row = 0;
 	public static boolean destory = false;
-	public static JOptionPane confirm ;
+	public static JOptionPane confirm;
 	private List<Write> threadList = new ArrayList<Write>();
-	private static String currentPath=null;
+	private static String currentPath = null;
+	public static int countUpload = 0;
+
 	public void init() {
 		try {
 			BeautyEyeLNFHelper.launchBeautyEyeLNF();
 		} catch (Exception e) {
 			WebRequest.writeLog(e);
 		}
-		url = getParameter("url");
-		
-		
-		
-		
-	//	url="http://192.168.6.100:8080/mms/";
-			
-			
-			
+		 url = getParameter("url");
+
+		//url = "http://192.168.13.95:8080/mms/";
+
 		getContentPane().setLayout(new BorderLayout());
 		// getContentPane().setSize(800,300);
 		JPanel jp = new JPanel();
@@ -82,40 +79,43 @@ public class UploadApp extends JApplet {
 		jp.add(this.getUpload());
 		// jp.add(this.getStop());
 		JScrollPane scrollpane = new JScrollPane();
-		scrollpane.setPreferredSize(new Dimension(500,230));
+		scrollpane.setPreferredSize(new Dimension(500, 230));
 		this.getTable().setCellSelectionEnabled(true);
 		scrollpane
 				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollpane.getViewport().add(this.getTable());
 		jp.add(scrollpane);
-		
-		
-		
+
 		this.getSelect().addMouseListener(new java.awt.event.MouseAdapter() {
 			@SuppressWarnings("static-access")
 			public void mouseClicked(java.awt.event.MouseEvent e) {
-				if(!WebRequest.connected()){
-					confirm.showMessageDialog(null, "网络连接异常", "错误信息", JOptionPane.ERROR_MESSAGE);
+				if (!WebRequest.connected()) {
+					confirm.showMessageDialog(null, "网络连接异常", "错误信息",
+							JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				getUpload().setText("正在校验文件，请稍等");
 				JFileChooser jfChooser;
-				if(currentPath!=null){
+				if (currentPath != null) {
 					jfChooser = new JFileChooser(currentPath);
-				}else{
-					 jfChooser = new JFileChooser();
+				} else {
+					jfChooser = new JFileChooser();
 				}
 				jfChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				jfChooser.setMultiSelectionEnabled(true);
 				int res = jfChooser.showOpenDialog(jfChooser);
 				if (JFileChooser.APPROVE_OPTION == res) {
 					File[] files = jfChooser.getSelectedFiles();
-					currentPath=files[0].getParentFile().getAbsolutePath();
+					currentPath = files[0].getParentFile().getAbsolutePath();
 					int size = files.length;
-					for (int i=0;i<size;i++) {
-						if(files[i].getName().length()>50){
-							JOptionPane.showMessageDialog(null, files[i].getName()+"文件名过长，请修改后重新上传\r\n只允许小于50个字符的文件名", "错误信息", JOptionPane.ERROR_MESSAGE);
-							if(i==(size-1)){
+					for (int i = 0; i < size; i++) {
+						if (files[i].getName().length() > 50) {
+							JOptionPane.showMessageDialog(
+									null,
+									files[i].getName()
+											+ "文件名过长，请修改后重新上传\r\n只允许小于50个字符的文件名",
+									"错误信息", JOptionPane.ERROR_MESSAGE);
+							if (i == (size - 1)) {
 								getUpload().setText("上传");
 							}
 							continue;
@@ -131,34 +131,43 @@ public class UploadApp extends JApplet {
 						boolean chooser = false;
 						try {
 							fd.setMd5(getFileName(files[i]));
-							for(FileData data:getFileDatas()){
-								if(data.getMd5().equals(fd.getMd5())){
-									JOptionPane.showMessageDialog(null, "已选择与文件"+files[i].getName()+"相同文件，请重新选择", "错误信息", JOptionPane.ERROR_MESSAGE);
-									chooser=true;
+							for (FileData data : getFileDatas()) {
+								if (data.getMd5().equals(fd.getMd5())) {
+									JOptionPane.showMessageDialog(null,
+											"已选择与文件" + files[i].getName()
+													+ "相同文件，请重新选择", "错误信息",
+											JOptionPane.ERROR_MESSAGE);
+									chooser = true;
 								}
 							}
-							fd.setStatus(WebRequest.exists(files[i].getName(),fd.getMd5()));
+							fd.setStatus(WebRequest.exists(files[i].getName(),
+									fd.getMd5()));
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
 							WebRequest.writeLog(e1);
 						}
-						if(chooser){
+						if (chooser) {
 							getUpload().setText("上传");
 							continue;
 						}
-						if(fd.getStatus()==2){
+						if (fd.getStatus() == 2) {
 							getTableModel().addRow(
-									new Object[] { row, files[i].getName(), 100, getSize(files[i]),
-											"文件已存在", "删除" });
+									new Object[] { row, files[i].getName(),
+											100, getSize(files[i]), "文件已存在",
+											"删除" });
 							getFileDatas().add(fd);
-						}else {
+						} else {
 							getTableModel().addRow(
-									new Object[] { row, files[i].getName(), 0, getSize(files[i]),
-											"等待上传", "删除" });
+									new Object[] { row, files[i].getName(), 0,
+											getSize(files[i]), "等待上传", "删除" });
+							if (fd.getStatus() != 1) {
+								countUpload++;
+							}
 							getFileDatas().add(fd);
 						}
 						row++;
 						getUpload().setText("上传");
+
 					}
 				} else {
 					getUpload().setText("上传");
@@ -167,18 +176,27 @@ public class UploadApp extends JApplet {
 		});
 		getUpload().addMouseListener(new java.awt.event.MouseAdapter() {
 			public void mouseClicked(java.awt.event.MouseEvent e) {
+				System.out.println(countUpload);
+				if (countUpload == 0) {
+					return;
+				}
+				if (countUpload != 0) {
+					System.out.println("hide");
+					getUpload().setVisible(false);
+				}
+				// getUpload().setEnabled(false);
 				destory = false;
 				for (int i = 0; i < getFileDatas().size(); i++) {
 					if (Integer.parseInt(getTableModel().getValueAt(i, 2)
 							.toString()) >= 100) {
 						continue;
 					}
-					if (getFileDatas().get(i).getStatus()==1) {
+					if (getFileDatas().get(i).getStatus() == 1) {
 						// FtpCtrl.pro.put(i, 100L);
-						if(new WebRequest().insert(getFileDatas().get(i))){
+						if (new WebRequest().insert(getFileDatas().get(i))) {
 							getTableModel().setValueAt("上传成功", i, 4);
 							getTableModel().setValueAt(100, i, 2);
-						}else{
+						} else {
 							getTableModel().setValueAt("上传失败", i, 4);
 							getTableModel().setValueAt(0, i, 2);
 						}
@@ -187,12 +205,11 @@ public class UploadApp extends JApplet {
 						FtpClient client = new FtpClient();
 						getTableModel().setValueAt("正在上传", i, 4);
 						Write w = new Write(client, i);
-						//w.start();
+						// w.start();
 						Read r = new Read(client, i);
-						//r.start();
+						// r.start();
 						ThreadPool.getInstance().start(w, r);
 						threadList.add(w);
-
 					}
 
 					// threadList.add(r);
@@ -202,7 +219,7 @@ public class UploadApp extends JApplet {
 		getStop().addMouseListener(new java.awt.event.MouseAdapter() {
 			@SuppressWarnings("static-access")
 			public void mouseClicked(java.awt.event.MouseEvent e) {
-			//	destory = true;
+				// destory = true;
 				for (Write thread : threadList) {
 					if (thread == null) {
 						continue;
@@ -218,19 +235,20 @@ public class UploadApp extends JApplet {
 					}
 				}
 				threadList = new ArrayList<Write>();
-			} 
+			}
 		});
 		setVisible(true);
 	}
 
 	public int getCreaterID() {
-		return Integer.parseInt(getParameter("createrID"));
-		//return 1;
+		 return Integer.parseInt(getParameter("createrID"));
+		//return 67;
 	}
 
 	public void setCreaterID(int createrID) {
 		this.createrID = createrID;
-	} 
+	}
+
 	public List<Write> getThreadList() {
 		return threadList;
 	}
@@ -312,16 +330,16 @@ public class UploadApp extends JApplet {
 	}
 
 	public static String getSize(File file) {
-//		try {
-//			return new FileInputStream(file).available() / 1024 + " kb";
-//		} catch (FileNotFoundException e) {
-//			WebRequest.writeLog(e);
-//			return null;
-//		} catch (IOException e) {
-//			WebRequest.writeLog(e);
-//			return null;
-//		}
-		return String.valueOf(file.length()/1024)+" kb";
+		// try {
+		// return new FileInputStream(file).available() / 1024 + " kb";
+		// } catch (FileNotFoundException e) {
+		// WebRequest.writeLog(e);
+		// return null;
+		// } catch (IOException e) {
+		// WebRequest.writeLog(e);
+		// return null;
+		// }
+		return String.valueOf(file.length() / 1024) + " kb";
 	}
 
 	public String getFileName(File file) throws IOException {
@@ -362,7 +380,13 @@ public class UploadApp extends JApplet {
 				Object value, boolean isSelected, boolean hasFocus, int row,
 				int column) {
 			this.setText(value.toString());
-			if (isSelected) {
+			if (isSelected
+					&& getTableModel().getValueAt(row, 4).toString()
+							.equals("正在上传")) {
+				// JOptionPane.showMessageDialog(null,
+				// "该文件正在上传，无法删除", "警告",
+				// JOptionPane.ERROR_MESSAGE);
+			} else if (isSelected) {
 				/*
 				 * System.out.println("isSelected"); int choose =
 				 * JOptionPane.showConfirmDialog(null, "确定删除此行么", "删除",
@@ -384,9 +408,12 @@ public class UploadApp extends JApplet {
 						remove = f;
 					}
 				}
+				if (getTableModel().getValueAt(row, 4).toString()
+						.equals("等待上传")) {
+					countUpload--;
+				}
 
 				getTableModel().removeRow(row);
-
 				getFileDatas().remove(remove);
 				// for(FileData f :getFileDatas()){
 				// System.out.println(f.getRow()+""+f.getFile().getName());
@@ -449,28 +476,34 @@ public class UploadApp extends JApplet {
 						+ "&_^"
 						+ getFileDatas().get(i).getFile().getName()
 						+ "&_@"
-						+ getFileDatas().get(i).getCreaterID()
-						+ ".temp~", i);
+						+ getFileDatas().get(i).getCreaterID() + ".temp~", i);
 				getTableModel().setValueAt(status.getDescription(), i, 4);
+				countUpload--;
+				if (countUpload == 0) {
+					// getUpload().setEnabled(true);
+					getUpload().setVisible(true);
+				}
 				// System.out.println(status.getDescription());
 			} catch (java.io.IOException e) {
-				confirm.showMessageDialog(null, "文件写入异常，请稍候再试", "错误信息", JOptionPane.ERROR_MESSAGE);
+				confirm.showMessageDialog(null, "文件写入异常，请稍候再试", "错误信息",
+						JOptionPane.ERROR_MESSAGE);
 				getTableModel().setValueAt("停止", i, 4);
 				WebRequest.writeLog(e);
 			}
 
-			if (getTableModel().getValueAt(i, 4).toString().equals(
-					FtpStatus.Upload_New_File_Success.getDescription())
-					|| !getTableModel().getValueAt(i, 4).toString().equals(
-							FtpStatus.File_Exits.getDescription())
-					|| !getTableModel().getValueAt(i, 4).toString().equals(
-							FtpStatus.Upload_From_Break_Success
+			if (getTableModel().getValueAt(i, 4).toString()
+					.equals(FtpStatus.Upload_New_File_Success.getDescription())
+					|| !getTableModel().getValueAt(i, 4).toString()
+							.equals(FtpStatus.File_Exits.getDescription())
+					|| !getTableModel()
+							.getValueAt(i, 4)
+							.toString()
+							.equals(FtpStatus.Upload_From_Break_Success
 									.getDescription())) {
 				getTableModel().setValueAt(100, i, 2);
 				getFileDatas().remove(i);
 			}
 		}
-
 	}
 
 	@SuppressWarnings("unused")
@@ -485,16 +518,17 @@ public class UploadApp extends JApplet {
 
 		@SuppressWarnings("static-access")
 		public void run() {
-			if (!getTableModel().getValueAt(i, 4).toString().equals(
-					FtpStatus.Upload_New_File_Success.getDescription())
-					|| !getTableModel().getValueAt(i, 4).toString().equals(
-							FtpStatus.File_Exits.getDescription())
-					|| !getTableModel().getValueAt(i, 4).toString().equals(
-							FtpStatus.Upload_From_Break_Success
+			if (!getTableModel().getValueAt(i, 4).toString()
+					.equals(FtpStatus.Upload_New_File_Success.getDescription())
+					|| !getTableModel().getValueAt(i, 4).toString()
+							.equals(FtpStatus.File_Exits.getDescription())
+					|| !getTableModel()
+							.getValueAt(i, 4)
+							.toString()
+							.equals(FtpStatus.Upload_From_Break_Success
 									.getDescription())) {
 				// TODO client.getCtrl().pro.get(i)==null
-				while ((FtpCtrl.pro.get(i) == null || FtpCtrl.pro.get(i) < 100)
-						) {
+				while ((FtpCtrl.pro.get(i) == null || FtpCtrl.pro.get(i) < 100)) {
 					try {
 						this.sleep(500);
 						getTableModel().setValueAt(FtpCtrl.pro.get(i), i, 2);

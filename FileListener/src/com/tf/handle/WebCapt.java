@@ -35,7 +35,14 @@ public class WebCapt {
 					+ file.getAbsolutePath() + "\"";
 			// System.out.println(cmd);
 			Runtime.getRuntime().exec("cmd /c " + cmd);
+			int count = 0;
 			while (!file.exists()) {
+				count++;
+				if (count == 10) {
+					file = new File(dir + File.separator + "processed"
+							+ File.separator + "fail.png");
+					return file;
+				}
 				Thread.sleep(5000);
 			}
 		}

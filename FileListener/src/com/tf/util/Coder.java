@@ -19,6 +19,9 @@ import com.tf.view.Listener;
 public class Coder {
 	public boolean execute(CodeUtil util) {
 		try {
+			if(!Boolean.parseBoolean(XmlUtil.getNodeValue("cryptographic"))){
+				return true;
+			}
 			DESKeySpec dks = new DESKeySpec("twinflagcoder".getBytes());
 			SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
 			SecretKey secretKey = keyFactory.generateSecret(dks);
@@ -142,5 +145,7 @@ public class Coder {
 		});
 
 	}
-
+public static void main(String[] args) {
+	new Coder().decode("F:\\95484a33b197ead0179e4d993a0e49d0.mkv");
+}
 }

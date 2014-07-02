@@ -11,11 +11,13 @@ import javax.swing.JOptionPane;
 
 import com.tf.model.Element;
 import com.tf.util.Logs;
+import com.tf.util.XmlUtil;
 import com.tf.view.Listener;
 
 public class DBhandle {
 
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();
+	int count = 0;
 
 	public int Insert(Element element) {
 		lock.writeLock().lock();
@@ -50,6 +52,7 @@ public class DBhandle {
 		} finally {
 			lock.writeLock().unlock();
 		}
+		writeOprationLog(element.getFileName(), element.getuId());
 		return res;
 	}
 
@@ -80,6 +83,7 @@ public class DBhandle {
 		} finally {
 			lock.writeLock().unlock();
 		}
+		writeOprationLog(element.getFileName()+"(上传失败)", element.getuId());
 		return res;
 
 	}
@@ -100,16 +104,46 @@ public class DBhandle {
 			}
 			conn.close();
 		} catch (SQLException e) {
-			Listener.area.append("异常警告\r\n" + "SQL异常，正在尝试重新连接\r\n");
-			JOptionPane.showMessageDialog(null, "数据库连接异常,请重新填写数据库连接信息", "错误信息",
-					JOptionPane.OK_OPTION);
-			Logs.WriteLogs(e);
-			ConnectionSource.reset();
-			getAuditStatus();
+			// Listener.area.append("异常警告\r\n" + "SQL异常，正在尝试重新连接\r\n");
+			if (count < 10) {
+				count++;
+				getAuditStatus();
+			} else {
+				JOptionPane.showMessageDialog(null, "数据库连接异常,请重新填写数据库连接信息",
+						"错误信息", JOptionPane.OK_OPTION);
+				Logs.WriteLogs(e);
+				ConnectionSource.reset();
+				getAuditStatus();
+			}
 		} finally {
 			lock.readLock().unlock();
 		}
 		return res;
+	}
+
+	public void setCryptographic() {
+		lock.readLock().lock();
+		Connection conn = null;
+		try {
+			conn = ConnectionSource.getConnection();
+			String sql = "";
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				XmlUtil.saveOrUpdate("cryptographic",
+						rs.getString("cryptographic"));
+			}
+			conn.close();
+		} catch (SQLException e) {
+			// Listener.area.append("异常警告\r\n" + "SQL异常，正在尝试重新连接\r\n");
+			JOptionPane.showMessageDialog(null, "数据库连接异常,请重新填写数据库连接信息", "错误信息",
+					JOptionPane.OK_OPTION);
+			Logs.WriteLogs(e);
+			ConnectionSource.reset();
+			setCryptographic();
+		} finally {
+			lock.readLock().unlock();
+		}
 	}
 
 	public Element getWebElement(int id) {
@@ -162,6 +196,85 @@ public class DBhandle {
 			Logs.WriteLogs(e);
 			ConnectionSource.reset();
 			updateElement(element);
+		} finally {
+			lock.writeLock().unlock();
+		}
+		writeOprationLog(element.getTId());
+		return res;
+	}
+
+	public int writeLogs(String sql, String mac) {
+		int res = -1;
+		lock.writeLock().lock();
+		Connection conn = null;
+		try {
+			// insert into t_statistics select null,t_id,name,+sql+,now() from
+			// t_terminal where MAC = '88-51-FB-71-3D-91'
+			conn = ConnectionSource.getConnection();
+			String insert = "insert into t_statistics select null,t_id,name,"
+					+ sql.trim().replaceAll(";", "")
+					+ ",now() from t_terminal where MAC = '" + mac + "'";
+			Logs.WriteLogs("insert:--");
+			Logs.WriteLogs(insert);
+			PreparedStatement ps = conn.prepareStatement(insert);
+			res = ps.executeUpdate();
+			conn.close();
+		} catch (SQLException e) {
+			Logs.WriteLogs(e);
+			Listener.area.append("异常警告\r\n" + "统计信息写入异常\r\n");
+			return -5;
+		} finally {
+			lock.writeLock().unlock();
+		}
+		return res;
+	}
+
+	public int writeOprationLog(String elementName, int userId) {
+		int res = -1;
+		lock.writeLock().lock();
+		Connection conn = null;
+		try {
+			// insert into t_statistics select null,t_id,name,+sql+,now() from
+			// t_terminal where MAC = '88-51-FB-71-3D-91'
+			conn = ConnectionSource.getConnection();
+			String insert = "insert into t_operationlog select null,username,'"+elementName+"',now(),1,4 from t_user where t_id = "+userId;
+			PreparedStatement ps = conn.prepareStatement(insert);
+			res = ps.executeUpdate();
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			Listener.area.append("异常警告\r\n" + "SQL异常，正在尝试重新连接\r\n");
+			JOptionPane.showMessageDialog(null, "数据库连接异常,请重新填写数据库连接信息", "错误信息",
+					JOptionPane.OK_OPTION);
+			Logs.WriteLogs(e);
+			ConnectionSource.reset();
+			writeOprationLog(elementName, userId);
+		} finally {
+			lock.writeLock().unlock();
+		}
+		return res;
+	}
+	public int writeOprationLog( int webElementId) {
+		int res = -1;
+		lock.writeLock().lock();
+		Connection conn = null;
+		try {
+			// insert into t_statistics select null,t_id,name,+sql+,now() from
+			// t_terminal where MAC = '88-51-FB-71-3D-91'
+			conn = ConnectionSource.getConnection();
+			String insert = "insert into t_operationlog select null ,t_user.username,t_element.FileName,now(),1,4 from t_element ,t_user where t_element.CreatorID = t_user.t_id and t_element.t_id = "+webElementId;
+//			String insert = "insert into t_operationlog select null,creatorID,FileName,now(),1,4  from t_element where t_id = "+webElementId;
+			PreparedStatement ps = conn.prepareStatement(insert);
+			res = ps.executeUpdate();
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			Listener.area.append("异常警告\r\n" + "SQL异常，正在尝试重新连接\r\n");
+			JOptionPane.showMessageDialog(null, "数据库连接异常,请重新填写数据库连接信息", "错误信息",
+					JOptionPane.OK_OPTION);
+			Logs.WriteLogs(e);
+			ConnectionSource.reset();
+			writeOprationLog(webElementId);
 		} finally {
 			lock.writeLock().unlock();
 		}

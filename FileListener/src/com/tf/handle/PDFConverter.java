@@ -20,9 +20,9 @@ public class PDFConverter {
 
 	public File Convert() {
 		try {
-			String cmd = PDFInit.getPath() + " " + sourceFile.getAbsolutePath()
+			String cmd = PDFInit.getPath() + " /hidden " + sourceFile.getAbsolutePath()
 					+ " " + destFile.getAbsolutePath();
-			System.out.println(cmd);
+			//System.out.println(cmd);
 			Runtime.getRuntime().exec("cmd /c " + cmd);
 			while (!destFile.exists()) {
 				try {

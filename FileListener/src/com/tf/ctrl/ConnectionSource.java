@@ -53,7 +53,8 @@ public class ConnectionSource {
 			p.setProperty("url", "jdbc:mysql://"+DBInit.getData().getUrl()+":"+DBInit.getData().getPort()+"/"+DBInit.getData().getName()+"?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&failOverReadOnly=false");
 			p.setProperty("password", DBInit.getData().getPwd());
 			p.setProperty("username", DBInit.getData().getUser());
-			
+			System.out.println(DBInit.getData().getPwd());
+			System.out.println(DBInit.getData().getUser());
 			
 			
 			p.setProperty("maxIdle", "2");
