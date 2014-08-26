@@ -58,9 +58,9 @@ public class UploadApp extends JApplet {
 		} catch (Exception e) {
 			WebRequest.writeLog(e);
 		}
-		 url = getParameter("url");
+		 //url = getParameter("url");
 
-		//url = "http://192.168.13.95:8080/mms/";
+		url = "http://192.168.13.5:8080/mms/";
 
 		getContentPane().setLayout(new BorderLayout());
 		// getContentPane().setSize(800,300);
@@ -89,7 +89,7 @@ public class UploadApp extends JApplet {
 		this.getSelect().addMouseListener(new java.awt.event.MouseAdapter() {
 			@SuppressWarnings("static-access")
 			public void mouseClicked(java.awt.event.MouseEvent e) {
-				if (!WebRequest.connected()) {
+				if (!WebRequest.isConnectable()) {
 					confirm.showMessageDialog(null, "网络连接异常", "错误信息",
 							JOptionPane.ERROR_MESSAGE);
 					return;
@@ -176,13 +176,14 @@ public class UploadApp extends JApplet {
 		});
 		getUpload().addMouseListener(new java.awt.event.MouseAdapter() {
 			public void mouseClicked(java.awt.event.MouseEvent e) {
-				System.out.println(countUpload);
+				//System.out.println(countUpload);
 				if (countUpload == 0) {
 					return;
 				}
 				if (countUpload != 0) {
 					System.out.println("hide");
 					getUpload().setVisible(false);
+					getSelect().setVisible(false);
 				}
 				// getUpload().setEnabled(false);
 				destory = false;
@@ -241,8 +242,8 @@ public class UploadApp extends JApplet {
 	}
 
 	public int getCreaterID() {
-		 return Integer.parseInt(getParameter("createrID"));
-		//return 67;
+		// return Integer.parseInt(getParameter("createrID"));
+		return 1;
 	}
 
 	public void setCreaterID(int createrID) {
@@ -482,6 +483,7 @@ public class UploadApp extends JApplet {
 				if (countUpload == 0) {
 					// getUpload().setEnabled(true);
 					getUpload().setVisible(true);
+					getSelect().setVisible(true);
 				}
 				// System.out.println(status.getDescription());
 			} catch (java.io.IOException e) {

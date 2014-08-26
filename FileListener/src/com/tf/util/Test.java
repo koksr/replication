@@ -50,6 +50,7 @@ public class Test {
 		try {
 			fis = new FileInputStream(srcFile);
 			fos = new FileOutputStream(destFile);
+			
 			input = fis.getChannel();
 			output = fos.getChannel();
 			long size = input.size();

@@ -48,7 +48,7 @@ public class LogThreadPool extends Thread {
 			File[] files = new File(System.getProperty("user.dir")
 					+ File.separator + "statistics").listFiles();
 			for (File f : files) {
-				int res = 0 ;
+				int res = 0;
 				String time = f.getName().split("@")[0];
 				String mac = f.getName().split("@")[1].substring(0, f.getName()
 						.split("@")[1].lastIndexOf("."));
@@ -67,12 +67,14 @@ public class LogThreadPool extends Thread {
 					}
 					bufferedReader = new BufferedReader(input);
 					String sql = null;
-				
+
 					try {
 						while ((sql = bufferedReader.readLine()) != null) {
-//							Logs.WriteLogs("sql:--");
-//							Logs.WriteLogs(sql);
-						res = 	new DBhandle().writeLogs(unicodeToUtf8(sql), mac);
+							// Logs.WriteLogs("sql:--");
+							// Logs.WriteLogs(sql);
+							if ((res = new DBhandle().writeLogs(
+									unicodeToUtf8(sql), mac)) == -5)
+								continue;
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -86,10 +88,10 @@ public class LogThreadPool extends Thread {
 						}
 					}
 					try {
-						if(res!=-5){FileUtils.moveToDirectory(f,
+						FileUtils.moveToDirectory(f,
 								new File(System.getProperty("user.dir")
 										+ File.separator + "statistics_old"),
-								true);}
+								true);
 						// boolean flag =ElementUtil.renameTO(f, new
 						// File(System.getProperty("user.dir")+File.separator+"statistics_old"+File.separator+f.getName()));
 						// System.out.println(flag);

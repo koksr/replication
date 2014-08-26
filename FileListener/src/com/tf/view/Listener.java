@@ -35,7 +35,7 @@ public class Listener extends JFrame {
 			Listener.area.append("BeautyEyeLNF运行失败，原因是：" + e.getMessage()
 					+ "\r\n");
 		}
-		UIManager.put("RootPane.setupButtonVisible", false);
+		//UIManager.put("RootPane.setupButtonVisible", false);
 		final JButton start = new JButton("开始");
 		final Listener win = new Listener();
 		win.setTitle("ftp服务器文件校验程序");

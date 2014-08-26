@@ -22,7 +22,6 @@ public class DBhandle {
 	public int Insert(Element element) {
 		lock.writeLock().lock();
 		Connection conn = null;
-		int res = -1;
 		try {
 			conn = ConnectionSource.getConnection();
 			String sql = "insert into t_element (CreatorID,FileName,FileSize,FilePath,TYPE,Resolution,TimeLength,ThumbnailUrl,AuditStatus,md5,description,uploadTime,isDeleted) values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -40,7 +39,17 @@ public class DBhandle {
 			ps.setString(11, element.getDescription());
 			ps.setTimestamp(12, element.getUploadTime());
 			ps.setShort(13, element.getIsDeleted());
-			res = ps.executeUpdate();
+			ps.executeUpdate();
+			ps = conn.prepareStatement("select @@identity");
+			ResultSet res = ps.executeQuery();
+			if (res.next()) {
+				try {
+					return InsertRole(res.getInt("@@identity"), element
+							.getuId());
+				} finally {
+					conn.close();
+				}
+			}
 			conn.close();
 		} catch (SQLException e) {
 			Listener.area.append("异常警告\r\n" + "SQL异常，正在尝试重新连接\r\n");
@@ -49,10 +58,30 @@ public class DBhandle {
 			Logs.WriteLogs(e);
 			ConnectionSource.reset();
 			Insert(element);
+			return -1;
 		} finally {
 			lock.writeLock().unlock();
 		}
 		writeOprationLog(element.getFileName(), element.getuId());
+		return -1;
+	}
+
+	public int InsertRole(int elementId, int userId) {
+		lock.writeLock().lock();
+		Connection conn = null;
+		int res = -1;
+		try {
+			conn = ConnectionSource.getConnection();
+			String sql = "insert into t_role_element select RoleID,"
+					+ elementId + " from t_user_role where UserID = " + userId;
+			PreparedStatement ps = conn.prepareStatement(sql);
+			res = ps.executeUpdate();
+			conn.close();
+		} catch (SQLException e) {
+			Logs.WriteLogs(e);
+		} finally {
+			lock.writeLock().unlock();
+		}
 		return res;
 	}
 
@@ -83,7 +112,7 @@ public class DBhandle {
 		} finally {
 			lock.writeLock().unlock();
 		}
-		writeOprationLog(element.getFileName()+"(上传失败)", element.getuId());
+		writeOprationLog(element.getFileName() + "(上传失败)", element.getuId());
 		return res;
 
 	}
@@ -126,21 +155,17 @@ public class DBhandle {
 		Connection conn = null;
 		try {
 			conn = ConnectionSource.getConnection();
-			String sql = "";
+			String sql = "select `value` from t_system where `key` = 'coder'";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-				XmlUtil.saveOrUpdate("cryptographic",
-						rs.getString("cryptographic"));
+				System.out.println(rs.getString("value"));
+				XmlUtil.saveOrUpdate("cryptographic", rs.getString("value"));
 			}
 			conn.close();
 		} catch (SQLException e) {
-			// Listener.area.append("异常警告\r\n" + "SQL异常，正在尝试重新连接\r\n");
-			JOptionPane.showMessageDialog(null, "数据库连接异常,请重新填写数据库连接信息", "错误信息",
-					JOptionPane.OK_OPTION);
 			Logs.WriteLogs(e);
-			ConnectionSource.reset();
-			setCryptographic();
+			XmlUtil.saveOrUpdate("cryptographic", "false");
 		} finally {
 			lock.readLock().unlock();
 		}
@@ -205,7 +230,6 @@ public class DBhandle {
 
 	public int writeLogs(String sql, String mac) {
 		int res = -1;
-		lock.writeLock().lock();
 		Connection conn = null;
 		try {
 			// insert into t_statistics select null,t_id,name,+sql+,now() from
@@ -214,17 +238,16 @@ public class DBhandle {
 			String insert = "insert into t_statistics select null,t_id,name,"
 					+ sql.trim().replaceAll(";", "")
 					+ ",now() from t_terminal where MAC = '" + mac + "'";
-			Logs.WriteLogs("insert:--");
-			Logs.WriteLogs(insert);
 			PreparedStatement ps = conn.prepareStatement(insert);
 			res = ps.executeUpdate();
 			conn.close();
 		} catch (SQLException e) {
 			Logs.WriteLogs(e);
-			Listener.area.append("异常警告\r\n" + "统计信息写入异常\r\n");
+			Logs.WriteLogs("insert:--");
+			Logs.WriteLogs(sql);
+			Logs.WriteLogs(mac);
+			// Listener.area.append("异常警告\r\n" + "统计信息写入异常\r\n");
 			return -5;
-		} finally {
-			lock.writeLock().unlock();
 		}
 		return res;
 	}
@@ -237,7 +260,9 @@ public class DBhandle {
 			// insert into t_statistics select null,t_id,name,+sql+,now() from
 			// t_terminal where MAC = '88-51-FB-71-3D-91'
 			conn = ConnectionSource.getConnection();
-			String insert = "insert into t_operationlog select null,username,'"+elementName+"',now(),1,4 from t_user where t_id = "+userId;
+			String insert = "insert into t_operationlog select null,username,'"
+					+ elementName + "',now(),1,4 from t_user where t_id = "
+					+ userId;
 			PreparedStatement ps = conn.prepareStatement(insert);
 			res = ps.executeUpdate();
 			conn.close();
@@ -254,7 +279,8 @@ public class DBhandle {
 		}
 		return res;
 	}
-	public int writeOprationLog( int webElementId) {
+
+	public int writeOprationLog(int webElementId) {
 		int res = -1;
 		lock.writeLock().lock();
 		Connection conn = null;
@@ -262,8 +288,10 @@ public class DBhandle {
 			// insert into t_statistics select null,t_id,name,+sql+,now() from
 			// t_terminal where MAC = '88-51-FB-71-3D-91'
 			conn = ConnectionSource.getConnection();
-			String insert = "insert into t_operationlog select null ,t_user.username,t_element.FileName,now(),1,4 from t_element ,t_user where t_element.CreatorID = t_user.t_id and t_element.t_id = "+webElementId;
-//			String insert = "insert into t_operationlog select null,creatorID,FileName,now(),1,4  from t_element where t_id = "+webElementId;
+			String insert = "insert into t_operationlog select null ,t_user.username,t_element.FileName,now(),1,4 from t_element ,t_user where t_element.CreatorID = t_user.t_id and t_element.t_id = "
+					+ webElementId;
+			// String insert =
+			// "insert into t_operationlog select null,creatorID,FileName,now(),1,4  from t_element where t_id = "+webElementId;
 			PreparedStatement ps = conn.prepareStatement(insert);
 			res = ps.executeUpdate();
 			conn.close();

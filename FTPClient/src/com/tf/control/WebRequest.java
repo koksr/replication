@@ -42,7 +42,7 @@ public class WebRequest {
 		}
 		return fcon;
 	}
-	public static boolean connected(){
+	public static boolean isConnectable(){
 		boolean flag = false;
 		URL url;
 		try {

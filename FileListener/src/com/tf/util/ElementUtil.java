@@ -179,6 +179,14 @@ public class ElementUtil {
 		} catch (IOException e) {
 			e.printStackTrace();
 			Logs.WriteLogs(e);
+		}catch(OutOfMemoryError e){
+			try {
+				FileUtils.copyFile(new File(source.getParent()+File.separator+"fail.png"),new File(source.getParent()+File.separator+"img"+source.getName()) );
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			return;
 		}
 		int width = srcFile.getWidth(null);
 		int height = srcFile.getHeight(null);
