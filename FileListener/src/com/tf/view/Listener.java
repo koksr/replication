@@ -9,8 +9,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.UIManager;
-
 import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
 
 import com.sun.awt.AWTUtilities;
